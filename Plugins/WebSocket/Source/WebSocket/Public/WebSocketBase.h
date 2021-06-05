@@ -59,6 +59,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = WebSocket)
 	void Close();
 
+    UFUNCTION(BlueprintCallable, Category = WebSocket)
+    void Reconnect();
+
 	void Connect(const FString& uri, const TMap<FString, FString>& header);
 
 	UPROPERTY(BlueprintAssignable, Category = WebSocket)
@@ -82,4 +85,5 @@ public:
 	struct libwebsockets::lws* mlws;
 	TArray<FString> mSendQueue;
 	TMap<FString, FString> mHeaderMap;
+    FString prev_uri;
 };

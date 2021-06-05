@@ -71,22 +71,26 @@ int UWebSocketContext::callback_echo(struct libwebsockets::lws *wsi, enum libweb
 
     FScopeLock lock(&lock_websocketCtx);
 
-//    UE_LOG(WebSocket, Error, TEXT("%s:%d: reason=%d"), TEXT(__FUNCTION__), __LINE__, reason);
+    ///UE_LOG(WebSocket, Error, TEXT("%s:%d: reason=%d"), TEXT(__FUNCTION__), __LINE__, reason);
 
 	switch (reason)
 	{
-	case libwebsockets::LWS_CALLBACK_CLOSED:
+    case libwebsockets::LWS_CALLBACK_WSI_DESTROY:
+        if (!pWebSocketBase) return -1;
+        pWebSocketBase->Cleanlws();
+        break;
+
+    case libwebsockets::LWS_CALLBACK_CLIENT_CLOSED:
+    case libwebsockets::LWS_CALLBACK_CLOSED_CLIENT_HTTP:
 		if (!pWebSocketBase) return -1;
-		pWebSocketBase->Cleanlws();
 		pWebSocketBase->OnClosed.Broadcast();
 		break;
 
 	case libwebsockets::LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
 	{
-		if (!pWebSocketBase) return -1;
-		FString strError = UTF8_TO_TCHAR(in);
-		UE_LOG(WebSocket, Error, TEXT("libwebsocket connect error:%s"), *strError);
-		pWebSocketBase->Cleanlws();
+        FString strError = UTF8_TO_TCHAR(in);
+        UE_LOG(WebSocket, Error, TEXT("libwebsocket connect error:%s"), *strError);
+        if (!pWebSocketBase) return -1;
 		pWebSocketBase->OnConnectError.Broadcast(strError);
 	}
 		break;

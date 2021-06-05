@@ -47,6 +47,11 @@ void UWebSocketBase::BeginDestroy()
 	}
 }
 
+void UWebSocketBase::Reconnect()
+{
+    Connect(prev_uri, mHeaderMap);
+}
+
 void UWebSocketBase::Connect(const FString& uri, const TMap<FString, FString>& header)
 {
     FScopeLock lock(&lock_websocketCtx);
@@ -138,6 +143,7 @@ void UWebSocketBase::Connect(const FString& uri, const TMap<FString, FString>& h
 	}
 
 	mHeaderMap = header;
+    prev_uri = uri;
 }
 
 void UWebSocketBase::SendText(const FString& data)
@@ -200,15 +206,9 @@ bool UWebSocketBase::ProcessHeader(unsigned char** p, unsigned char* end)
 
 	return true;
 }
-
 void UWebSocketBase::Close()
 {
-	if (mlws != nullptr)
-	{
-        libwebsockets::lws_set_wsi_user(mlws, NULL);
-		mlws = nullptr;
-	}
-
+    Cleanlws();
 	OnClosed.Broadcast();
 }
 
@@ -217,6 +217,7 @@ void UWebSocketBase::Cleanlws()
 	if (mlws != nullptr)
 	{
         libwebsockets::lws_set_wsi_user(mlws, NULL);
+        mlws = nullptr;
 	}
 }
 
