@@ -77,7 +77,7 @@ public class WebSocket : ModuleRules
             string[] StaticLibrariesX64 = new string[] {
                 "websockets_static.lib",
                 //"libcrypto.lib",
-                //"libssl.lib",
+                "libssl.lib",
             };
 
             foreach (string Lib in StaticLibrariesX64)
