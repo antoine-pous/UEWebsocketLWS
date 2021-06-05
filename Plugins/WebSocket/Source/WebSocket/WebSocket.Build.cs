@@ -12,8 +12,10 @@ public class WebSocket : ModuleRules
 
     public WebSocket(ReadOnlyTargetRules Target) : base(Target)
     {
-		
-		PublicIncludePaths.AddRange(
+        bEnableExceptions = true;
+        PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+
+        PublicIncludePaths.AddRange(
 			new string[] {
 				"WebSocket/Public"
 				// ... add public include paths required here ...

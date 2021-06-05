@@ -19,9 +19,9 @@
 *  MA  02110-1301  USA
 */
 
+#include "WebSocketBase.h"
 #include "WebSocket.h"
 #include <iostream>
-#include "WebSocketBase.h"
 #include "libwebsockets.h"
 
 #define MAX_ECHO_PAYLOAD 64*1024

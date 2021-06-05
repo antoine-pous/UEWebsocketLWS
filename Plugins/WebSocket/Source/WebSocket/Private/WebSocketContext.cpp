@@ -19,8 +19,8 @@
 *  MA  02110-1301  USA
 */
 
-#include "WebSocket.h"
 #include "WebSocketContext.h"
+#include "WebSocket.h"
 #include "UObjectGlobals.h"
 #include "WebSocketBase.h"
 
