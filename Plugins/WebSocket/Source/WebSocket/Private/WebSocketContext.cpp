@@ -23,10 +23,11 @@
 #include "WebSocket.h"
 #include "UObjectGlobals.h"
 #include "WebSocketBase.h"
-
+#include "Misc/ScopeLock.h"
 
 #define MAX_PAYLOAD	64*1024
 
+extern FCriticalSection lock_websocketCtx;
 extern TSharedPtr<UWebSocketContext> s_websocketCtx;
 
 static struct libwebsockets::lws_protocols protocols[] = {
@@ -67,6 +68,10 @@ int UWebSocketContext::callback_echo(struct libwebsockets::lws *wsi, enum libweb
 {
 	void* pUser = libwebsockets::lws_wsi_user(wsi);
 	UWebSocketBase* pWebSocketBase = (UWebSocketBase*)pUser;
+
+    FScopeLock lock(&lock_websocketCtx);
+
+//    UE_LOG(WebSocket, Error, TEXT("%s:%d: reason=%d"), TEXT(__FUNCTION__), __LINE__, reason);
 
 	switch (reason)
 	{
@@ -123,10 +128,19 @@ int UWebSocketContext::callback_echo(struct libwebsockets::lws *wsi, enum libweb
 UWebSocketContext::UWebSocketContext()
 {
 	mlwsContext = nullptr;
+    UE_LOG(WebSocket, Error, TEXT("%s:%d: object created"), TEXT(__FUNCTION__), __LINE__);
 }
 
 void UWebSocketContext::CreateCtx()
 {
+    FScopeLock lock(&lock_websocketCtx);
+
+    if (mlwsContext != nullptr)
+    {
+        UE_LOG(WebSocket, Error, TEXT("%s:%d: context already created"), TEXT(__FUNCTION__), __LINE__);
+        return;
+    }
+
 	struct libwebsockets::lws_context_creation_info info;
 	memset(&info, 0, sizeof info);
 
@@ -142,18 +156,20 @@ void UWebSocketContext::CreateCtx()
 	info.options |= LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
 
 	mlwsContext = libwebsockets::lws_create_context(&info);
-	if (mlwsContext == nullptr)
+    if (mlwsContext == nullptr)
 	{
-		//UE_LOG(WebSocket, Error, TEXT("libwebsocket Init fail"));
+		UE_LOG(WebSocket, Error, TEXT("libwebsocket Init fail"));
 	}
 }
 
 void UWebSocketContext::Tick(float DeltaTime)
 {
-	if (mlwsContext != nullptr)
-	{
+    FScopeLock lock(&lock_websocketCtx);
+
+    if (mlwsContext != nullptr)
+    {
         libwebsockets::lws_callback_on_writable_all_protocol(mlwsContext, &protocols[0]);
-        libwebsockets::lws_service(mlwsContext, 0);
+        libwebsockets::lws_service(mlwsContext, -1);
 	}
 }
 

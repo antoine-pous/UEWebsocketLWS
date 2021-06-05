@@ -24,8 +24,10 @@
 #include "WebSocketContext.h"
 #include "Runtime/Launch/Resources/Version.h"
 #include "JsonObjectConverter.h"
+#include "Misc/ScopeLock.h"
 
 TSharedPtr<UWebSocketContext> s_websocketCtx;
+FCriticalSection lock_websocketCtx;
 
 static bool GetTextFromObject(const TSharedRef<FJsonObject>& Obj, FText& TextOut)
 {

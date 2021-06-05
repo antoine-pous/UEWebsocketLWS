@@ -22,8 +22,11 @@
 #include "WebSocketBase.h"
 #include "WebSocket.h"
 #include <iostream>
+#include "Misc/ScopeLock.h"
 
 #define MAX_ECHO_PAYLOAD 64*1024
+
+extern FCriticalSection lock_websocketCtx;
 
 UWebSocketBase::UWebSocketBase()
 {
@@ -35,6 +38,7 @@ UWebSocketBase::UWebSocketBase()
 void UWebSocketBase::BeginDestroy()
 {
 	Super::BeginDestroy();
+    FScopeLock lock(&lock_websocketCtx);
 
 	if (mlws != nullptr)
 	{
@@ -45,6 +49,8 @@ void UWebSocketBase::BeginDestroy()
 
 void UWebSocketBase::Connect(const FString& uri, const TMap<FString, FString>& header)
 {
+    FScopeLock lock(&lock_websocketCtx);
+
 	if (uri.IsEmpty())
 	{
 		return;
@@ -122,6 +128,7 @@ void UWebSocketBase::Connect(const FString& uri, const TMap<FString, FString>& h
 	connectInfo.ietf_version_or_minus_one = -1;
 	connectInfo.userdata = this;
 
+    UE_LOG(WebSocket, Error, TEXT("%s:%d: uri=%s"), TEXT(__FUNCTION__), __LINE__, *uri);
 	mlws = libwebsockets::lws_client_connect_via_info(&connectInfo);
 	//mlws = lws_client_connect_extended(mlwsContext, TCHAR_TO_UTF8(*strAddress), iPort, iUseSSL, TCHAR_TO_UTF8(*strPath), TCHAR_TO_UTF8(*strHost), TCHAR_TO_UTF8(*strHost), NULL, -1, (void*)this);
 	if (mlws == nullptr)
