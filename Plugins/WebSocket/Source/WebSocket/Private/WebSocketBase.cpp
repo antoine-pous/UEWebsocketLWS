@@ -22,7 +22,6 @@
 #include "WebSocketBase.h"
 #include "WebSocket.h"
 #include <iostream>
-#include "libwebsockets.h"
 
 #define MAX_ECHO_PAYLOAD 64*1024
 
@@ -39,7 +38,7 @@ void UWebSocketBase::BeginDestroy()
 
 	if (mlws != nullptr)
 	{
-		lws_set_wsi_user(mlws, NULL);
+        libwebsockets::lws_set_wsi_user(mlws, NULL);
 		mlws = nullptr;
 	}
 }
@@ -106,7 +105,7 @@ void UWebSocketBase::Connect(const FString& uri, const TMap<FString, FString>& h
 		}
 	}
 
-	struct lws_client_connect_info connectInfo;
+	struct libwebsockets::lws_client_connect_info connectInfo;
 	memset(&connectInfo, 0, sizeof(connectInfo));
 
 	std::string stdAddress = TCHAR_TO_UTF8(*strAddress);
@@ -123,7 +122,7 @@ void UWebSocketBase::Connect(const FString& uri, const TMap<FString, FString>& h
 	connectInfo.ietf_version_or_minus_one = -1;
 	connectInfo.userdata = this;
 
-	mlws = lws_client_connect_via_info(&connectInfo);
+	mlws = libwebsockets::lws_client_connect_via_info(&connectInfo);
 	//mlws = lws_client_connect_extended(mlwsContext, TCHAR_TO_UTF8(*strAddress), iPort, iUseSSL, TCHAR_TO_UTF8(*strPath), TCHAR_TO_UTF8(*strHost), TCHAR_TO_UTF8(*strHost), NULL, -1, (void*)this);
 	if (mlws == nullptr)
 	{
@@ -160,7 +159,7 @@ void UWebSocketBase::ProcessWriteable()
 
 		unsigned char buf[LWS_PRE + MAX_ECHO_PAYLOAD];
 		memcpy(&buf[LWS_PRE], strData.c_str(), strData.size() );
-		lws_write(mlws, &buf[LWS_PRE], strData.size(), LWS_WRITE_TEXT);
+        libwebsockets::lws_write(mlws, &buf[LWS_PRE], strData.size(), libwebsockets::LWS_WRITE_TEXT);
 
 		mSendQueue.RemoveAt(0);
 	}
@@ -186,7 +185,7 @@ bool UWebSocketBase::ProcessHeader(unsigned char** p, unsigned char* end)
 		std::string strValue = TCHAR_TO_UTF8(*(it.Value));
 
 		strKey += ":";
-		if (lws_add_http_header_by_name(mlws, (const unsigned char*)strKey.c_str(), (const unsigned char*)strValue.c_str(), (int)strValue.size(), p, end))
+		if (libwebsockets::lws_add_http_header_by_name(mlws, (const unsigned char*)strKey.c_str(), (const unsigned char*)strValue.c_str(), (int)strValue.size(), p, end))
 		{
 			return false;
 		}
@@ -199,7 +198,7 @@ void UWebSocketBase::Close()
 {
 	if (mlws != nullptr)
 	{
-		lws_set_wsi_user(mlws, NULL);
+        libwebsockets::lws_set_wsi_user(mlws, NULL);
 		mlws = nullptr;
 	}
 
@@ -210,7 +209,7 @@ void UWebSocketBase::Cleanlws()
 {
 	if (mlws != nullptr)
 	{
-		lws_set_wsi_user(mlws, NULL);
+        libwebsockets::lws_set_wsi_user(mlws, NULL);
 	}
 }
 

@@ -24,6 +24,9 @@
 #include "Components/ActorComponent.h"
 #include "UObject/NoExportTypes.h"
 #include "Delegates/DelegateCombinations.h"
+namespace libwebsockets {
+#include "libwebsockets.h"
+}
 #include "WebSocketBase.generated.h"
 
 
@@ -75,8 +78,8 @@ public:
 	void ProcessRead(const char* in, int len);
 	bool ProcessHeader(unsigned char** p, unsigned char* end);
 
-	struct lws_context* mlwsContext;
-	struct lws* mlws;
+	struct libwebsockets::lws_context* mlwsContext;
+	struct libwebsockets::lws* mlws;
 	TArray<FString> mSendQueue;
 	TMap<FString, FString> mHeaderMap;
 };
