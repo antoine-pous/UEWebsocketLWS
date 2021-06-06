@@ -1,10 +1,10 @@
 // Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 
-#include "WebSocket.h"
+#include "WebSocketLWS.h"
 
-#define LOCTEXT_NAMESPACE "FWebSocketModule"
+#define LOCTEXT_NAMESPACE "FWebSocketLWSModule"
 
-void FWebSocketModule::StartupModule()
+void FWebSocketLWSModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 }

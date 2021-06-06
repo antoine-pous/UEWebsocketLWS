@@ -87,19 +87,19 @@ class WEBSOCKET_API UWebSocketBlueprintLibrary : public UBlueprintFunctionLibrar
 	GENERATED_BODY()
 public:
 
-	UFUNCTION(BlueprintCallable, Category = "WebSocket")
+	UFUNCTION(BlueprintCallable, Category = WebSocketLWS)
 	static UWebSocketBase* CreateInstance(const FString& url);
 
-	UFUNCTION(BlueprintCallable, Category = "WebSocket")
+	UFUNCTION(BlueprintCallable, Category = WebSocketLWS)
 	static UWebSocketBase* CreateInstanceWithHeader(const FString& url, const TArray<FWebSocketHeaderPair>& header);
 
-	UFUNCTION(BlueprintCallable, Category = "WebSocket")
+	UFUNCTION(BlueprintCallable, Category = WebSocketLWS)
 	static UObject* JsonToObject(const FString& data, UClass * StructDefinition, bool checkAll);
 	
-	UFUNCTION(BlueprintCallable, Category = "WebSocket")
+	UFUNCTION(BlueprintCallable, Category = WebSocketLWS)
 	static bool GetJsonIntField(const FString& data, const FString& key, int& iValue);
 
-	UFUNCTION(BlueprintCallable, Category = "WebSocket")
+	UFUNCTION(BlueprintCallable, Category = WebSocketLWS)
 	static bool ObjectToJson(UObject* Object, FString& data);
 
 

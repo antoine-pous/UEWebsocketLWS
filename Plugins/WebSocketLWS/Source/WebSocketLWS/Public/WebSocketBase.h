@@ -55,25 +55,25 @@ public:
 
 	virtual void BeginDestroy() override;
 	
-	UFUNCTION(BlueprintCallable, Category = WebSocket)
+	UFUNCTION(BlueprintCallable, Category = WebSocketLWS)
 	void SendText(const FString& data);
 
-	UFUNCTION(BlueprintCallable, Category = WebSocket)
+	UFUNCTION(BlueprintCallable, Category = WebSocketLWS)
 	void Close();
 
-    UFUNCTION(BlueprintCallable, Category = WebSocket)
+    UFUNCTION(BlueprintCallable, Category = WebSocketLWS)
 	void Connect();
 
-	UPROPERTY(BlueprintAssignable, Category = WebSocket)
+	UPROPERTY(BlueprintAssignable, Category = WebSocketLWS)
 	FWebSocketConnectError OnConnectError;
 
-	UPROPERTY(BlueprintAssignable, Category = WebSocket)
+	UPROPERTY(BlueprintAssignable, Category = WebSocketLWS)
 	FWebSocketClosed OnClosed;
 
-	UPROPERTY(BlueprintAssignable, Category = WebSocket)
+	UPROPERTY(BlueprintAssignable, Category = WebSocketLWS)
 	FWebSocketConnected OnConnectComplete;
 
-	UPROPERTY(BlueprintAssignable, Category = WebSocket)
+	UPROPERTY(BlueprintAssignable, Category = WebSocketLWS)
 	FWebSocketRecieve OnReceiveData;
 
 	void Cleanlws();
