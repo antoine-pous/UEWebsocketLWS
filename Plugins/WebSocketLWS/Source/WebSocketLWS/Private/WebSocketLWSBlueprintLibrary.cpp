@@ -19,14 +19,14 @@
 *  MA  02110-1301  USA
 */
 
-#include "WebSocketBlueprintLibrary.h"
-#include "WebSocket.h"
-#include "WebSocketContext.h"
+#include "WebSocketLWSBlueprintLibrary.h"
+#include "WebSocketLWS.h"
+#include "WebSocketLWSContext.h"
 #include "Runtime/Launch/Resources/Version.h"
 #include "JsonObjectConverter.h"
 #include "Misc/ScopeLock.h"
 
-TSharedPtr<UWebSocketContext> s_websocketCtx;
+TSharedPtr<UWebSocketLWSContext> s_websocketCtx;
 FCriticalSection lock_websocketCtx;
 
 static bool GetTextFromObject(const TSharedRef<FJsonObject>& Obj, FText& TextOut)
@@ -50,7 +50,7 @@ static bool GetTextFromObject(const TSharedRef<FJsonObject>& Obj, FText& TextOut
 	return false;
 }
 
-FString UWebSocketBlueprintLibrary::StandardizeCase(const FString &StringIn)
+FString UWebSocketLWSBlueprintLibrary::StandardizeCase(const FString &StringIn)
 {
 	// this probably won't work for all cases, consider downcaseing the string fully
 	FString FixedString = StringIn;
@@ -59,11 +59,11 @@ FString UWebSocketBlueprintLibrary::StandardizeCase(const FString &StringIn)
 	return FixedString;
 }
 
-UWebSocketBase* UWebSocketBlueprintLibrary::CreateInstance(const FString& url)
+UWebSocketLWSBase* UWebSocketLWSBlueprintLibrary::CreateInstance(const FString& url)
 {
 	if (s_websocketCtx.Get() == nullptr)
 	{
-		s_websocketCtx =  MakeShareable(NewObject<UWebSocketContext>() );
+		s_websocketCtx =  MakeShareable(NewObject<UWebSocketLWSContext>() );
 		s_websocketCtx->CreateCtx();
 		s_websocketCtx->AddToRoot();
 	}
@@ -71,11 +71,11 @@ UWebSocketBase* UWebSocketBlueprintLibrary::CreateInstance(const FString& url)
 	return s_websocketCtx->CreateInstance(url, TMap<FString, FString>() );
 }
 
-UWebSocketBase* UWebSocketBlueprintLibrary::CreateInstanceWithHeader(const FString& url, const TArray<FWebSocketHeaderPair>& header)
+UWebSocketLWSBase* UWebSocketLWSBlueprintLibrary::CreateInstanceWithHeader(const FString& url, const TArray<FWebSocketLWSHeaderPair>& header)
 {
 	if (s_websocketCtx.Get() == nullptr)
 	{
-		s_websocketCtx = MakeShareable(NewObject<UWebSocketContext>());
+		s_websocketCtx = MakeShareable(NewObject<UWebSocketLWSContext>());
 		s_websocketCtx->CreateCtx();
 		s_websocketCtx->AddToRoot();
 	}
@@ -89,7 +89,7 @@ UWebSocketBase* UWebSocketBlueprintLibrary::CreateInstanceWithHeader(const FStri
 	return s_websocketCtx->CreateInstance(url, headerMap);
 }
 
-bool UWebSocketBlueprintLibrary::GetJsonIntField(const FString& data, const FString& key, int& iValue)
+bool UWebSocketLWSBlueprintLibrary::GetJsonIntField(const FString& data, const FString& key, int& iValue)
 {
 	FString tmpData = data;
 	TSharedRef<TJsonReader<TCHAR>> Reader = FJsonStringReader::Create(MoveTemp(tmpData));
@@ -110,7 +110,7 @@ bool UWebSocketBlueprintLibrary::GetJsonIntField(const FString& data, const FStr
 	return true;
 }
 
-bool UWebSocketBlueprintLibrary::ObjectToJson(UObject* Object, FString& data)
+bool UWebSocketLWSBlueprintLibrary::ObjectToJson(UObject* Object, FString& data)
 {
 	UClass* ClassObject = Object->GetClass();
 	TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
@@ -126,7 +126,7 @@ bool UWebSocketBlueprintLibrary::ObjectToJson(UObject* Object, FString& data)
 	return bSuccess;
 }
 
-UObject* UWebSocketBlueprintLibrary::JsonToObject(const FString& data, UClass * ClassObject, bool checkAll)
+UObject* UWebSocketLWSBlueprintLibrary::JsonToObject(const FString& data, UClass * ClassObject, bool checkAll)
 {
 	UObject* pNewObject = NewObject<UObject>((UObject*)GetTransientPackage(), ClassObject);
 
@@ -148,11 +148,11 @@ UObject* UWebSocketBlueprintLibrary::JsonToObject(const FString& data, UClass * 
 }
 
 
-bool UWebSocketBlueprintLibrary::JsonValueToFProperty(TSharedPtr<FJsonValue> JsonValue, FProperty* Property, void* OutValue, int64 CheckFlags, int64 SkipFlags)
+bool UWebSocketLWSBlueprintLibrary::JsonValueToFProperty(TSharedPtr<FJsonValue> JsonValue, FProperty* Property, void* OutValue, int64 CheckFlags, int64 SkipFlags)
 {
 	if (!JsonValue.IsValid())
 	{
-		UE_LOG(WebSocket, Error, TEXT("JsonValueToFProperty - Invalid value JSON key"));
+		UE_LOG(WebSocketLWS, Error, TEXT("JsonValueToFProperty - Invalid value JSON key"));
 		return false;
 	}
 
@@ -163,13 +163,13 @@ bool UWebSocketBlueprintLibrary::JsonValueToFProperty(TSharedPtr<FJsonValue> Jso
 	{
 		if (bArrayProperty)
 		{
-			UE_LOG(WebSocket, Error, TEXT("JsonValueToFProperty - Attempted to import TArray from non-array JSON key"));
+			UE_LOG(WebSocketLWS, Error, TEXT("JsonValueToFProperty - Attempted to import TArray from non-array JSON key"));
 			return false;
 		}
 
 		if (Property->ArrayDim != 1)
 		{
-			UE_LOG(WebSocket, Warning, TEXT("Ignoring excess properties when deserializing %s"), *Property->GetName());
+			UE_LOG(WebSocketLWS, Warning, TEXT("Ignoring excess properties when deserializing %s"), *Property->GetName());
 		}
 
 		return ConvertScalarJsonValueToFProperty(JsonValue, Property, OutValue, CheckFlags, SkipFlags);
@@ -186,7 +186,7 @@ bool UWebSocketBlueprintLibrary::JsonValueToFProperty(TSharedPtr<FJsonValue> Jso
 	const auto& ArrayValue = JsonValue->AsArray();
 	if (Property->ArrayDim < ArrayValue.Num())
 	{
-		UE_LOG(WebSocket, Warning, TEXT("Ignoring excess properties when deserializing %s"), *Property->GetName());
+		UE_LOG(WebSocketLWS, Warning, TEXT("Ignoring excess properties when deserializing %s"), *Property->GetName());
 	}
 
 	// Read into native array
@@ -203,7 +203,7 @@ bool UWebSocketBlueprintLibrary::JsonValueToFProperty(TSharedPtr<FJsonValue> Jso
 
 extern bool GetTextFromObject(const TSharedRef<FJsonObject>& Obj, FText& TextOut);
 
-bool UWebSocketBlueprintLibrary::ConvertScalarJsonValueToFProperty(TSharedPtr<FJsonValue> JsonValue, FProperty* Property, void* OutValue, int64 CheckFlags, int64 SkipFlags)
+bool UWebSocketLWSBlueprintLibrary::ConvertScalarJsonValueToFProperty(TSharedPtr<FJsonValue> JsonValue, FProperty* Property, void* OutValue, int64 CheckFlags, int64 SkipFlags)
 {
 	if (FEnumProperty* EnumProperty = Cast<FEnumProperty>(Property))
 	{
@@ -513,12 +513,12 @@ bool UWebSocketBlueprintLibrary::ConvertScalarJsonValueToFProperty(TSharedPtr<FJ
 }
 
 
-bool UWebSocketBlueprintLibrary::JsonObjectToUStruct(const TSharedRef<FJsonObject>& JsonObject, const UStruct* StructDefinition, void* OutStruct, int64 CheckFlags, int64 SkipFlags)
+bool UWebSocketLWSBlueprintLibrary::JsonObjectToUStruct(const TSharedRef<FJsonObject>& JsonObject, const UStruct* StructDefinition, void* OutStruct, int64 CheckFlags, int64 SkipFlags)
 {
 	return JsonAttributesToUStruct(JsonObject->Values, StructDefinition, OutStruct, CheckFlags, SkipFlags);
 }
 
-bool UWebSocketBlueprintLibrary::JsonAttributesToUStruct(const TMap< FString, TSharedPtr<FJsonValue> >& JsonAttributes, const UStruct* StructDefinition, void* OutStruct, int64 CheckFlags, int64 SkipFlags)
+bool UWebSocketLWSBlueprintLibrary::JsonAttributesToUStruct(const TMap< FString, TSharedPtr<FJsonValue> >& JsonAttributes, const UStruct* StructDefinition, void* OutStruct, int64 CheckFlags, int64 SkipFlags)
 {
 	if (StructDefinition == FJsonObjectWrapper::StaticStruct())
 	{
@@ -574,12 +574,12 @@ bool UWebSocketBlueprintLibrary::JsonAttributesToUStruct(const TMap< FString, TS
 }
 
 
-bool UWebSocketBlueprintLibrary::UObjectToJsonObject(const UStruct* StructDefinition, const void* Struct, TSharedRef<FJsonObject> OutJsonObject, int64 CheckFlags, int64 SkipFlags)
+bool UWebSocketLWSBlueprintLibrary::UObjectToJsonObject(const UStruct* StructDefinition, const void* Struct, TSharedRef<FJsonObject> OutJsonObject, int64 CheckFlags, int64 SkipFlags)
 {
 	return UObjectToJsonAttributes(StructDefinition, Struct, OutJsonObject->Values, CheckFlags, SkipFlags);
 }
 
-bool UWebSocketBlueprintLibrary::UObjectToJsonAttributes(const UStruct* StructDefinition, const void* Struct, TMap< FString, TSharedPtr<FJsonValue> >& OutJsonAttributes, int64 CheckFlags, int64 SkipFlags)
+bool UWebSocketLWSBlueprintLibrary::UObjectToJsonAttributes(const UStruct* StructDefinition, const void* Struct, TMap< FString, TSharedPtr<FJsonValue> >& OutJsonAttributes, int64 CheckFlags, int64 SkipFlags)
 {
 	if (SkipFlags == 0)
 	{
@@ -621,7 +621,7 @@ bool UWebSocketBlueprintLibrary::UObjectToJsonAttributes(const UStruct* StructDe
 		if (!JsonValue.IsValid())
 		{
 			FFieldClass* PropClass = Property->GetClass();
-			UE_LOG(WebSocket, Warning, TEXT("UObjectToJsonObject - Unhandled property type '%s': %s"), *PropClass->GetName(), *Property->GetPathName());
+			UE_LOG(WebSocketLWS, Warning, TEXT("UObjectToJsonObject - Unhandled property type '%s': %s"), *PropClass->GetName(), *Property->GetPathName());
 			continue;
 		}
 
@@ -632,7 +632,7 @@ bool UWebSocketBlueprintLibrary::UObjectToJsonAttributes(const UStruct* StructDe
 	return true;
 }
 
-TSharedPtr<FJsonValue> UWebSocketBlueprintLibrary::FPropertyToJsonValue(FProperty* Property, const void* Value, int64 CheckFlags, int64 SkipFlags)
+TSharedPtr<FJsonValue> UWebSocketLWSBlueprintLibrary::FPropertyToJsonValue(FProperty* Property, const void* Value, int64 CheckFlags, int64 SkipFlags)
 {
 	if (Property->ArrayDim == 1)
 	{
@@ -647,7 +647,7 @@ TSharedPtr<FJsonValue> UWebSocketBlueprintLibrary::FPropertyToJsonValue(FPropert
 	return MakeShareable(new FJsonValueArray(Array));
 }
 
-TSharedPtr<FJsonValue> UWebSocketBlueprintLibrary::ConvertScalarFPropertyToJsonValue(FProperty* Property, const void* Value, int64 CheckFlags, int64 SkipFlags)
+TSharedPtr<FJsonValue> UWebSocketLWSBlueprintLibrary::ConvertScalarFPropertyToJsonValue(FProperty* Property, const void* Value, int64 CheckFlags, int64 SkipFlags)
 {
 	// See if there's a custom export callback first, so it can override default behavior
 	

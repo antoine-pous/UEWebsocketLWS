@@ -19,23 +19,23 @@
 *  MA  02110-1301  USA
 */
 
-#include "WebSocketContext.h"
-#include "WebSocket.h"
+#include "WebSocketLWSContext.h"
+#include "WebSocketLWS.h"
 #include "UObjectGlobals.h"
-#include "WebSocketBase.h"
+#include "WebSocketLWSBase.h"
 #include "Misc/ScopeLock.h"
 
 #define MAX_PAYLOAD	64*1024
 
 extern FCriticalSection lock_websocketCtx;
-extern TSharedPtr<UWebSocketContext> s_websocketCtx;
+extern TSharedPtr<UWebSocketLWSContext> s_websocketCtx;
 
 static struct libwebsockets::lws_protocols protocols[] = {
 	/* first protocol must always be HTTP handler */
 
 	{
 		"",		/* name - can be overridden with -e */
-		UWebSocketContext::callback_echo,
+		UWebSocketLWSContext::callback_echo,
 		0,
 		MAX_PAYLOAD,
 	},
@@ -55,18 +55,18 @@ static const struct libwebsockets::lws_extension exts[] = {
         libwebsockets::lws_extension_callback_pm_deflate,
 		"deflate_frame"
 	},
-	{ NULL, NULL, NULL /* terminator */ }
+    { NULL, NULL, NULL /* terminator */ }
 };
 
-int UWebSocketContext::callback_echo(struct libwebsockets::lws *wsi, enum libwebsockets::lws_callback_reasons reason, void *user, void *in, size_t len)
+int UWebSocketLWSContext::callback_echo(struct libwebsockets::lws *wsi, enum libwebsockets::lws_callback_reasons reason, void *user, void *in, size_t len)
 {
 	void* pUser = libwebsockets::lws_wsi_user(wsi);
-	UWebSocketBase* pWebSocketBase = (UWebSocketBase*)pUser;
+	UWebSocketLWSBase* pWebSocketBase = (UWebSocketLWSBase*)pUser;
 
     FScopeLock lock(&lock_websocketCtx);
 
     if(libwebsockets::LWS_CALLBACK_CLIENT_WRITEABLE != reason && libwebsockets::LWS_CALLBACK_CLIENT_RECEIVE != reason)
-        UE_LOG(WebSocket, Log, TEXT("%s:%d: reason=%d, url=%s"), TEXT(__FUNCTION__), __LINE__,
+        UE_LOG(WebSocketLWS, Log, TEXT("%s:%d: reason=%d, url=%s"), TEXT(__FUNCTION__), __LINE__,
             reason, !pWebSocketBase ? TEXT("") : *pWebSocketBase->uri);
 
 	switch (reason)
@@ -85,7 +85,7 @@ int UWebSocketContext::callback_echo(struct libwebsockets::lws *wsi, enum libweb
 	case libwebsockets::LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
 	{
         FString strError = UTF8_TO_TCHAR(in);
-        UE_LOG(WebSocket, Error, TEXT("libwebsocket connect error:%s"), *strError);
+        UE_LOG(WebSocketLWS, Error, TEXT("libwebsocket connect error:%s"), *strError);
         if (!pWebSocketBase) return -1;
 		pWebSocketBase->OnConnectError.Broadcast(strError);
 	}
@@ -125,18 +125,18 @@ int UWebSocketContext::callback_echo(struct libwebsockets::lws *wsi, enum libweb
 	return 0;
 }
 
-UWebSocketContext::UWebSocketContext()
+UWebSocketLWSContext::UWebSocketLWSContext()
 {
 	mlwsContext = nullptr;
 }
 
-void UWebSocketContext::CreateCtx()
+void UWebSocketLWSContext::CreateCtx()
 {
     FScopeLock lock(&lock_websocketCtx);
 
     if (mlwsContext != nullptr)
     {
-        UE_LOG(WebSocket, Error, TEXT("%s:%d: context already created"), TEXT(__FUNCTION__), __LINE__);
+        UE_LOG(WebSocketLWS, Error, TEXT("%s:%d: context already created"), TEXT(__FUNCTION__), __LINE__);
         return;
     }
 
@@ -157,11 +157,11 @@ void UWebSocketContext::CreateCtx()
 	mlwsContext = libwebsockets::lws_create_context(&info);
     if (mlwsContext == nullptr)
 	{
-		UE_LOG(WebSocket, Error, TEXT("libwebsocket Init fail"));
+		UE_LOG(WebSocketLWS, Error, TEXT("libwebsocket Init fail"));
 	}
 }
 
-void UWebSocketContext::Tick(float DeltaTime)
+void UWebSocketLWSContext::Tick(float DeltaTime)
 {
     FScopeLock lock(&lock_websocketCtx);
 
@@ -172,31 +172,31 @@ void UWebSocketContext::Tick(float DeltaTime)
 	}
 }
 
-bool UWebSocketContext::IsTickable() const
+bool UWebSocketLWSContext::IsTickable() const
 {
 	return true;
 }
 
-TStatId UWebSocketContext::GetStatId() const
+TStatId UWebSocketLWSContext::GetStatId() const
 {
 	return TStatId();
 }
 
-UWebSocketBase* UWebSocketContext::CreateInstance(const FString& uri, const TMap<FString, FString>& header)
+UWebSocketLWSBase* UWebSocketLWSContext::CreateInstance(const FString& uri, const TMap<FString, FString>& header)
 {
 	if (mlwsContext == nullptr)
 	{
 		return nullptr;
 	}
 
-    UWebSocketBase* pNewSocketBase = NewObject<UWebSocketBase>();
+    UWebSocketLWSBase* pNewSocketBase = NewObject<UWebSocketLWSBase>();
 
     pNewSocketBase->Setup(uri, header, mlwsContext);
 
 	return pNewSocketBase;
 }
 
-UWebSocketBase* UWebSocketContext::CreateInstance(const FString& uri)
+UWebSocketLWSBase* UWebSocketLWSContext::CreateInstance(const FString& uri)
 {
     return CreateInstance(uri, TMap<FString, FString>() );
 }

@@ -27,15 +27,15 @@
 namespace libwebsockets {
 #include "libwebsockets.h"
 }
-#include "WebSocketBase.generated.h"
+#include "WebSocketLWSBase.generated.h"
 
 
-DEFINE_LOG_CATEGORY_STATIC(WebSocket, Log, All);
+DEFINE_LOG_CATEGORY_STATIC(WebSocketLWS, Log, All);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWebSocketConnectError, const FString&, error);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWebSocketClosed);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWebSocketConnected);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWebSocketRecieve, const FString&, data);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWebSocketLWSConnectError, const FString&, error);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWebSocketLWSClosed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWebSocketLWSConnected);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWebSocketLWSRecieve, const FString&, data);
 
 struct lws_context;
 struct lws;
@@ -44,12 +44,12 @@ struct lws;
  * 
  */
 UCLASS(Blueprintable, BlueprintType)
-class WEBSOCKET_API UWebSocketBase:public UObject
+class WEBSOCKETLWS_API UWebSocketLWSBase:public UObject
 {
 	GENERATED_BODY()
 public:
 
-    UWebSocketBase();
+    UWebSocketLWSBase();
 
     void Setup(const FString& uri, const TMap<FString, FString>& header, struct libwebsockets::lws_context* mlwsContext);
 
@@ -65,16 +65,16 @@ public:
 	void Connect();
 
 	UPROPERTY(BlueprintAssignable, Category = WebSocketLWS)
-	FWebSocketConnectError OnConnectError;
+	FWebSocketLWSConnectError OnConnectError;
 
 	UPROPERTY(BlueprintAssignable, Category = WebSocketLWS)
-	FWebSocketClosed OnClosed;
+	FWebSocketLWSClosed OnClosed;
 
 	UPROPERTY(BlueprintAssignable, Category = WebSocketLWS)
-	FWebSocketConnected OnConnectComplete;
+	FWebSocketLWSConnected OnConnectComplete;
 
 	UPROPERTY(BlueprintAssignable, Category = WebSocketLWS)
-	FWebSocketRecieve OnReceiveData;
+	FWebSocketLWSRecieve OnReceiveData;
 
 	void Cleanlws();
 	void ProcessWriteable();

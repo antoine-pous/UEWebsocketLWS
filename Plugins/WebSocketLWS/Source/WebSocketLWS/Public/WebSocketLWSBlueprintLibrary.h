@@ -28,8 +28,8 @@
 #include "Internationalization/Culture.h"
 #include "UObject/TextProperty.h"
 #include "UObject/PropertyPortFlags.h"
-#include "WebSocketBase.h"
-#include "WebSocketBlueprintLibrary.generated.h"
+#include "WebSocketLWSBase.h"
+#include "WebSocketLWSBlueprintLibrary.generated.h"
 
 
 UCLASS(BlueprintType, Blueprintable)
@@ -66,7 +66,7 @@ public:
 
 
 USTRUCT(BlueprintType)
-struct FWebSocketHeaderPair
+struct FWebSocketLWSHeaderPair
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -82,16 +82,16 @@ struct FWebSocketHeaderPair
  * 
  */
 UCLASS()
-class WEBSOCKET_API UWebSocketBlueprintLibrary : public UBlueprintFunctionLibrary
+class WEBSOCKETLWS_API UWebSocketLWSBlueprintLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
 
 	UFUNCTION(BlueprintCallable, Category = WebSocketLWS)
-	static UWebSocketBase* CreateInstance(const FString& url);
+	static UWebSocketLWSBase* CreateInstance(const FString& url);
 
 	UFUNCTION(BlueprintCallable, Category = WebSocketLWS)
-	static UWebSocketBase* CreateInstanceWithHeader(const FString& url, const TArray<FWebSocketHeaderPair>& header);
+	static UWebSocketLWSBase* CreateInstanceWithHeader(const FString& url, const TArray<FWebSocketLWSHeaderPair>& header);
 
 	UFUNCTION(BlueprintCallable, Category = WebSocketLWS)
 	static UObject* JsonToObject(const FString& data, UClass * StructDefinition, bool checkAll);

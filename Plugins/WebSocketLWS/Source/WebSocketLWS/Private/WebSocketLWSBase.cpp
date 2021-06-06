@@ -19,8 +19,8 @@
 *  MA  02110-1301  USA
 */
 
-#include "WebSocketBase.h"
-#include "WebSocket.h"
+#include "WebSocketLWSBase.h"
+#include "WebSocketLWS.h"
 #include <iostream>
 #include "Misc/ScopeLock.h"
 
@@ -28,20 +28,20 @@
 
 extern FCriticalSection lock_websocketCtx;
 
-UWebSocketBase::UWebSocketBase()
+UWebSocketLWSBase::UWebSocketLWSBase()
 {
     mlwsContext = nullptr;
     mlws = nullptr;
 }
 
-void UWebSocketBase::Setup(const FString& _uri, const TMap<FString, FString>& header, struct libwebsockets::lws_context* _mlwsContext)
+void UWebSocketLWSBase::Setup(const FString& _uri, const TMap<FString, FString>& header, struct libwebsockets::lws_context* _mlwsContext)
 {
     uri = _uri;
     mHeaderMap = header;
     mlwsContext = _mlwsContext;
 }
 
-void UWebSocketBase::BeginDestroy()
+void UWebSocketLWSBase::BeginDestroy()
 {
 	Super::BeginDestroy();
     FScopeLock lock(&lock_websocketCtx);
@@ -53,7 +53,7 @@ void UWebSocketBase::BeginDestroy()
 	}
 }
 
-void UWebSocketBase::Connect()
+void UWebSocketLWSBase::Connect()
 {
     FScopeLock lock(&lock_websocketCtx);
 
@@ -71,14 +71,14 @@ void UWebSocketBase::Connect()
 	int iPos = uri.Find(TEXT(":"));
 	if (iPos == INDEX_NONE)
 	{
-		//UE_LOG(WebSocket, Error, TEXT("Invalid Websocket address:%s"), *uri);
+		//UE_LOG(WebSocketLWS, Error, TEXT("Invalid Websocket address:%s"), *uri);
 		return;
 	}
 
 	FString strProtocol = uri.Left(iPos);
 	if (strProtocol.ToUpper() != TEXT("WS") && strProtocol.ToUpper() != TEXT("WSS"))
 	{
-		//UE_LOG(WebSocket, Error, TEXT("Invalid Protol:%s"), *strProtocol);
+		//UE_LOG(WebSocketLWS, Error, TEXT("Invalid Protol:%s"), *strProtocol);
 		return;
 	}
 
@@ -134,21 +134,21 @@ void UWebSocketBase::Connect()
 	connectInfo.ietf_version_or_minus_one = -1;
 	connectInfo.userdata = this;
 
-    UE_LOG(WebSocket, Log, TEXT("%s:%d: uri=%s"), TEXT(__FUNCTION__), __LINE__, *uri);
+    UE_LOG(WebSocketLWS, Log, TEXT("%s:%d: uri=%s"), TEXT(__FUNCTION__), __LINE__, *uri);
 	mlws = libwebsockets::lws_client_connect_via_info(&connectInfo);
 	//mlws = lws_client_connect_extended(mlwsContext, TCHAR_TO_UTF8(*strAddress), iPort, iUseSSL, TCHAR_TO_UTF8(*strPath), TCHAR_TO_UTF8(*strHost), TCHAR_TO_UTF8(*strHost), NULL, -1, (void*)this);
 	if (mlws == nullptr)
 	{
-		UE_LOG(WebSocket, Error, TEXT("create client connect fail"));
+		UE_LOG(WebSocketLWS, Error, TEXT("create client connect fail"));
 		return;
 	}
 }
 
-void UWebSocketBase::SendText(const FString& data)
+void UWebSocketLWSBase::SendText(const FString& data)
 {
 	if (data.Len() > MAX_ECHO_PAYLOAD)
 	{
-		UE_LOG(WebSocket, Error, TEXT("too large package to send > MAX_ECHO_PAYLOAD:%d > %d"), data.Len(), MAX_ECHO_PAYLOAD);
+		UE_LOG(WebSocketLWS, Error, TEXT("too large package to send > MAX_ECHO_PAYLOAD:%d > %d"), data.Len(), MAX_ECHO_PAYLOAD);
 		return;
 	}
 
@@ -158,11 +158,11 @@ void UWebSocketBase::SendText(const FString& data)
 	}
 	else
 	{
-		UE_LOG(WebSocket, Error, TEXT("the socket is closed, SendText fail"));
+		UE_LOG(WebSocketLWS, Error, TEXT("the socket is closed, SendText fail"));
 	}
 }
 
-void UWebSocketBase::ProcessWriteable()
+void UWebSocketLWSBase::ProcessWriteable()
 {
 	while (mSendQueue.Num() > 0)
 	{
@@ -176,14 +176,14 @@ void UWebSocketBase::ProcessWriteable()
 	}
 }
 
-void UWebSocketBase::ProcessRead(const char* in, int len)
+void UWebSocketLWSBase::ProcessRead(const char* in, int len)
 {
 	FString strData = UTF8_TO_TCHAR(in);
 	OnReceiveData.Broadcast(strData);
 }
 
 
-bool UWebSocketBase::ProcessHeader(unsigned char** p, unsigned char* end)
+bool UWebSocketLWSBase::ProcessHeader(unsigned char** p, unsigned char* end)
 {
 	if (mHeaderMap.Num() == 0)
 	{
@@ -204,13 +204,13 @@ bool UWebSocketBase::ProcessHeader(unsigned char** p, unsigned char* end)
 
 	return true;
 }
-void UWebSocketBase::Close()
+void UWebSocketLWSBase::Close()
 {
     Cleanlws();
 	OnClosed.Broadcast();
 }
 
-void UWebSocketBase::Cleanlws()
+void UWebSocketLWSBase::Cleanlws()
 {
 	if (mlws != nullptr)
 	{

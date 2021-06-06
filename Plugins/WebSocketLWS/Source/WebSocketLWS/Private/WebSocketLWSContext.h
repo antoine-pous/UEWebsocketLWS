@@ -26,20 +26,20 @@
 namespace libwebsockets {
     #include "libwebsockets.h"
 }
-#include "WebSocketContext.generated.h"
+#include "WebSocketLWSContext.generated.h"
 
 
-class UWebSocketBase;
+class UWebSocketLWSBase;
 /**
  * 
  */
 UCLASS()
-class UWebSocketContext : public UObject, public FTickableGameObject
+class UWebSocketLWSContext : public UObject, public FTickableGameObject
 {
 	GENERATED_BODY()
 public:
 
-	UWebSocketContext();
+	UWebSocketLWSContext();
 
 	void CreateCtx();
 
@@ -47,8 +47,8 @@ public:
 	virtual bool IsTickable() const override;
 	virtual TStatId GetStatId() const override;
 
-	UWebSocketBase* CreateInstance(const FString& uri);
-	UWebSocketBase* CreateInstance(const FString& uri, const TMap<FString, FString>& header);
+	UWebSocketLWSBase* CreateInstance(const FString& uri);
+	UWebSocketLWSBase* CreateInstance(const FString& uri, const TMap<FString, FString>& header);
 
 	static int callback_echo(struct libwebsockets::lws *wsi, enum libwebsockets::lws_callback_reasons reason, void *user, void *in, size_t len);
 	
