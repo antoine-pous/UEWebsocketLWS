@@ -3,14 +3,14 @@
 using System.IO;
 using UnrealBuildTool;
 
-public class WebSocket : ModuleRules
+public class WebSocketLWS : ModuleRules
 {
     private string ModulePath
     {
         get { return ModuleDirectory; }
     }
 
-    public WebSocket(ReadOnlyTargetRules Target) : base(Target)
+    public WebSocketLWS(ReadOnlyTargetRules Target) : base(Target)
     {
         bEnableExceptions = true;
         PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
