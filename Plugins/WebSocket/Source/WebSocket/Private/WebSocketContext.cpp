@@ -58,12 +58,6 @@ static const struct libwebsockets::lws_extension exts[] = {
 	{ NULL, NULL, NULL /* terminator */ }
 };
 
-void UWebSocketContext::BeginDestroy()
-{
-	Super::BeginDestroy();
-	s_websocketCtx.Reset();
-}
-
 int UWebSocketContext::callback_echo(struct libwebsockets::lws *wsi, enum libwebsockets::lws_callback_reasons reason, void *user, void *in, size_t len)
 {
 	void* pUser = libwebsockets::lws_wsi_user(wsi);
@@ -71,7 +65,9 @@ int UWebSocketContext::callback_echo(struct libwebsockets::lws *wsi, enum libweb
 
     FScopeLock lock(&lock_websocketCtx);
 
-    ///UE_LOG(WebSocket, Error, TEXT("%s:%d: reason=%d"), TEXT(__FUNCTION__), __LINE__, reason);
+    if(libwebsockets::LWS_CALLBACK_CLIENT_WRITEABLE != reason && libwebsockets::LWS_CALLBACK_CLIENT_RECEIVE != reason)
+        UE_LOG(WebSocket, Log, TEXT("%s:%d: reason=%d, url=%s"), TEXT(__FUNCTION__), __LINE__,
+            reason, !pWebSocketBase ? TEXT("") : *pWebSocketBase->prev_uri);
 
 	switch (reason)
 	{
@@ -123,7 +119,7 @@ int UWebSocketContext::callback_echo(struct libwebsockets::lws *wsi, enum libweb
 		break;
 
 	default:
-		break;
+        break;
 	}
 
 	return 0;
@@ -132,7 +128,6 @@ int UWebSocketContext::callback_echo(struct libwebsockets::lws *wsi, enum libweb
 UWebSocketContext::UWebSocketContext()
 {
 	mlwsContext = nullptr;
-    UE_LOG(WebSocket, Error, TEXT("%s:%d: object created"), TEXT(__FUNCTION__), __LINE__);
 }
 
 void UWebSocketContext::CreateCtx()
