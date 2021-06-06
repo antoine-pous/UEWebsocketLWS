@@ -30,10 +30,16 @@ extern FCriticalSection lock_websocketCtx;
 
 UWebSocketBase::UWebSocketBase()
 {
-	mlwsContext = nullptr;
-	mlws = nullptr;
+    mlwsContext = nullptr;
+    mlws = nullptr;
 }
 
+void UWebSocketBase::Setup(const FString& _uri, const TMap<FString, FString>& header, struct libwebsockets::lws_context* _mlwsContext)
+{
+    uri = _uri;
+    mHeaderMap = header;
+    mlwsContext = _mlwsContext;
+}
 
 void UWebSocketBase::BeginDestroy()
 {
@@ -47,12 +53,7 @@ void UWebSocketBase::BeginDestroy()
 	}
 }
 
-void UWebSocketBase::Reconnect()
-{
-    Connect(prev_uri, mHeaderMap);
-}
-
-void UWebSocketBase::Connect(const FString& uri, const TMap<FString, FString>& header)
+void UWebSocketBase::Connect()
 {
     FScopeLock lock(&lock_websocketCtx);
 
@@ -141,9 +142,6 @@ void UWebSocketBase::Connect(const FString& uri, const TMap<FString, FString>& h
 		UE_LOG(WebSocket, Error, TEXT("create client connect fail"));
 		return;
 	}
-
-	mHeaderMap = header;
-    prev_uri = uri;
 }
 
 void UWebSocketBase::SendText(const FString& data)

@@ -47,8 +47,8 @@ public:
 	virtual bool IsTickable() const override;
 	virtual TStatId GetStatId() const override;
 
-	UWebSocketBase* Connect(const FString& uri);
-	UWebSocketBase* Connect(const FString& uri, const TMap<FString, FString>& header);
+	UWebSocketBase* CreateInstance(const FString& uri);
+	UWebSocketBase* CreateInstance(const FString& uri, const TMap<FString, FString>& header);
 
 	static int callback_echo(struct libwebsockets::lws *wsi, enum libwebsockets::lws_callback_reasons reason, void *user, void *in, size_t len);
 	

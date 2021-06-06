@@ -49,7 +49,9 @@ class WEBSOCKET_API UWebSocketBase:public UObject
 	GENERATED_BODY()
 public:
 
-	UWebSocketBase();
+    UWebSocketBase();
+
+    void Setup(const FString& uri, const TMap<FString, FString>& header, struct libwebsockets::lws_context* mlwsContext);
 
 	virtual void BeginDestroy() override;
 	
@@ -60,9 +62,7 @@ public:
 	void Close();
 
     UFUNCTION(BlueprintCallable, Category = WebSocket)
-    void Reconnect();
-
-	void Connect(const FString& uri, const TMap<FString, FString>& header);
+	void Connect();
 
 	UPROPERTY(BlueprintAssignable, Category = WebSocket)
 	FWebSocketConnectError OnConnectError;
@@ -84,6 +84,6 @@ public:
 	struct libwebsockets::lws_context* mlwsContext;
 	struct libwebsockets::lws* mlws;
 	TArray<FString> mSendQueue;
-	TMap<FString, FString> mHeaderMap;
-    FString prev_uri;
+    FString uri;
+    TMap<FString, FString> mHeaderMap;
 };

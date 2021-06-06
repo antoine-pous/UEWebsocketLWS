@@ -59,7 +59,7 @@ FString UWebSocketBlueprintLibrary::StandardizeCase(const FString &StringIn)
 	return FixedString;
 }
 
-UWebSocketBase* UWebSocketBlueprintLibrary::Connect(const FString& url)
+UWebSocketBase* UWebSocketBlueprintLibrary::CreateInstance(const FString& url)
 {
 	if (s_websocketCtx.Get() == nullptr)
 	{
@@ -68,10 +68,10 @@ UWebSocketBase* UWebSocketBlueprintLibrary::Connect(const FString& url)
 		s_websocketCtx->AddToRoot();
 	}
 
-	return s_websocketCtx->Connect(url, TMap<FString, FString>() );
+	return s_websocketCtx->CreateInstance(url, TMap<FString, FString>() );
 }
 
-UWebSocketBase* UWebSocketBlueprintLibrary::ConnectWithHeader(const FString& url, const TArray<FWebSocketHeaderPair>& header)
+UWebSocketBase* UWebSocketBlueprintLibrary::CreateInstanceWithHeader(const FString& url, const TArray<FWebSocketHeaderPair>& header)
 {
 	if (s_websocketCtx.Get() == nullptr)
 	{
@@ -86,7 +86,7 @@ UWebSocketBase* UWebSocketBlueprintLibrary::ConnectWithHeader(const FString& url
 		headerMap.Add(header[i].key, header[i].value);
 	}
 
-	return s_websocketCtx->Connect(url, headerMap);
+	return s_websocketCtx->CreateInstance(url, headerMap);
 }
 
 bool UWebSocketBlueprintLibrary::GetJsonIntField(const FString& data, const FString& key, int& iValue)

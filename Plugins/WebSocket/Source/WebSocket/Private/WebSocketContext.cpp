@@ -67,7 +67,7 @@ int UWebSocketContext::callback_echo(struct libwebsockets::lws *wsi, enum libweb
 
     if(libwebsockets::LWS_CALLBACK_CLIENT_WRITEABLE != reason && libwebsockets::LWS_CALLBACK_CLIENT_RECEIVE != reason)
         UE_LOG(WebSocket, Log, TEXT("%s:%d: reason=%d, url=%s"), TEXT(__FUNCTION__), __LINE__,
-            reason, !pWebSocketBase ? TEXT("") : *pWebSocketBase->prev_uri);
+            reason, !pWebSocketBase ? TEXT("") : *pWebSocketBase->uri);
 
 	switch (reason)
 	{
@@ -182,23 +182,22 @@ TStatId UWebSocketContext::GetStatId() const
 	return TStatId();
 }
 
-UWebSocketBase* UWebSocketContext::Connect(const FString& uri, const TMap<FString, FString>& header)
+UWebSocketBase* UWebSocketContext::CreateInstance(const FString& uri, const TMap<FString, FString>& header)
 {
 	if (mlwsContext == nullptr)
 	{
 		return nullptr;
 	}
 
-	UWebSocketBase* pNewSocketBase = NewObject<UWebSocketBase>();
-	pNewSocketBase->mlwsContext = mlwsContext;
+    UWebSocketBase* pNewSocketBase = NewObject<UWebSocketBase>();
 
-	pNewSocketBase->Connect(uri, header);
+    pNewSocketBase->Setup(uri, header, mlwsContext);
 
 	return pNewSocketBase;
 }
 
-UWebSocketBase* UWebSocketContext::Connect(const FString& uri)
+UWebSocketBase* UWebSocketContext::CreateInstance(const FString& uri)
 {
-	return Connect(uri, TMap<FString, FString>() );
+    return CreateInstance(uri, TMap<FString, FString>() );
 }
 
