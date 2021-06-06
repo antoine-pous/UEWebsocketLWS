@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{87AA0332-4634-CF91-6995-988D4E2AD92B}",
+	"EngineAssociation": "{E28E9097-436A-42D0-2624-FEB196F018F6}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -12,7 +12,11 @@
 	],
 	"Plugins": [
 		{
-			"Name": "WebSocket",
+			"Name": "WebSocketLWS",
+			"Enabled": true
+		},
+		{
+			"Name": "Text3D",
 			"Enabled": true
 		}
 	]
